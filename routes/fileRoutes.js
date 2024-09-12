@@ -3,6 +3,6 @@ const router = express.Router();
 const { downloadFile } = require('../controllers/fileController');
 
 // 파일 다운로드
-router.post('/register', downloadFile);
+router.post('/download', downloadFile);
 
 module.exports = router;
