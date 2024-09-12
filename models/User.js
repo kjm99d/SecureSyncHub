@@ -33,6 +33,10 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  last_login: {
+    type: DataTypes.DATE,  // 마지막 로그인 시간 저장
+    allowNull: true,
+  }
 }, {
   timestamps: true,
   paranoid: true,  // for soft delete
