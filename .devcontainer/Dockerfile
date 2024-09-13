@@ -23,6 +23,9 @@ RUN apt-get -y update --no-install-recommends \
 # Add Node.js repository.
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
+# Add nodemon globally
+RUN npm install -g nodemon
+
 # Install Node.js.
 RUN apt-get -y update --no-install-recommends \
     && apt-get -y install --no-install-recommends nodejs \
