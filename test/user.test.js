@@ -11,21 +11,10 @@ import User from '../models/User.js'; // User 모델 파일 경로
 describe('POST /api/v1/users/register', () => {
 
   before(async () => {
-    // 외래 키 제약을 비활성화
     await sequelize.sync();
-    // await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-
-    //await sequelize.query('truncate table tutorial.Users;');
-
-    await User.destroy({
-      where: {},   // 모든 데이터를 삭제
-      cascade: true  // 연관된 FilePolicy도 함께 삭제
-    });
-
-    // 외래 키 제약을 다시 활성화
-    // await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+    await User.destroy({ where : {} });
   });
-  
+
 
   // CASE 1
   it('should create a new user and return a 201 status', async () => {

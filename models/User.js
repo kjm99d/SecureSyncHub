@@ -39,7 +39,6 @@ const User = sequelize.define('User', {
   }
 }, {
   timestamps: true,
-  paranoid: true,  // for soft delete
 });
 
 export default User;
