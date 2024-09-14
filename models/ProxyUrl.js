@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const ProxyUrl = sequelize.define('ProxyUrl', {
   id: {
@@ -27,4 +27,4 @@ const ProxyUrl = sequelize.define('ProxyUrl', {
   timestamps: true,
 });
 
-module.exports = ProxyUrl;
+export default ProxyUrl;

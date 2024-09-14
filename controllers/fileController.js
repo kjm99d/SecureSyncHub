@@ -1,4 +1,6 @@
-const { ProxyUrl } = require('../models');
+import Models from '../models/index.js';
+
+const { ProxyUrl } = Models;
 
 // 파일 다운로드 함수
 const downloadFile = async (req, res) => {
@@ -42,6 +44,4 @@ const downloadFile = async (req, res) => {
 };
 
 
-module.exports = {
-    downloadFile
-}
+export default downloadFile;

@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { downloadFile } = require('../controllers/fileController');
+import downloadFile from '../controllers/fileController.js';
 
 // 파일 다운로드
 router.post('/download', downloadFile);
 
-module.exports = router;
+export default router;

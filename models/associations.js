@@ -1,14 +1,16 @@
-const User = require('./User');
-const File = require('./File');
-const FilePolicy = require('./FilePolicy');
-const ProxyUrl = require('./ProxyUrl');
-const Device = require('./Device');
-const Log = require('./Log');
+import User from './User.js';
+import File from './File.js';
+import FilePolicy from './FilePolicy.js';
+import ProxyUrl from './ProxyUrl.js';
+import Device from './Device.js';
+import Log from './Log.js';
 
 // User and FilePolicy
-User.hasMany(FilePolicy, { foreignKey: 'userId' });
-FilePolicy.belongsTo(User, { foreignKey: 'userId' });
+//User.hasMany(FilePolicy, { foreignKey: 'userId', onDelete: 'cascade' } );
+//FilePolicy.belongsTo(User, { foreignKey: 'userId' , onDelete: 'cascade' } );
 
+
+/*
 // File and FilePolicy
 File.hasMany(FilePolicy, { foreignKey: 'fileId' });
 FilePolicy.belongsTo(File, { foreignKey: 'fileId' });
@@ -24,3 +26,4 @@ Device.belongsTo(User, { foreignKey: 'userId' });
 // User and Log
 User.hasMany(Log, { foreignKey: 'userId' });
 Log.belongsTo(User, { foreignKey: 'userId' });
+*/

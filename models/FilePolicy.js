@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const FilePolicy = sequelize.define('FilePolicy', {
   id: {
@@ -15,6 +15,7 @@ const FilePolicy = sequelize.define('FilePolicy', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  /*
   userId: {
     type: DataTypes.UUID,
     references: {
@@ -23,6 +24,7 @@ const FilePolicy = sequelize.define('FilePolicy', {
     },
     allowNull: false,
   },
+
   fileId: {
     type: DataTypes.UUID,
     references: {
@@ -31,8 +33,9 @@ const FilePolicy = sequelize.define('FilePolicy', {
     },
     allowNull: false,
   },
+  */
 }, {
   timestamps: true,
 });
 
-module.exports = FilePolicy;
+export default FilePolicy;
