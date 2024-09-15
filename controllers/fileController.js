@@ -44,4 +44,6 @@ const downloadFile = async (req, res) => {
 };
 
 
-export default downloadFile;
+export default { 
+    downloadFile 
+};

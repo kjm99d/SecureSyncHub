@@ -1,6 +1,8 @@
 import express from 'express';
 const router = express.Router();
-import downloadFile from '../controllers/fileController.js';
+import fileController from '../controllers/fileController.js';
+
+const { downloadFile } = fileController;
 
 // 파일 다운로드
 router.post('/download', downloadFile);

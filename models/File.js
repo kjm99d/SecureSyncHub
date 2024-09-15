@@ -7,7 +7,11 @@ const File = sequelize.define('File', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  fileName: {
+  fileName: {   // 파일명
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  filePath: {   // 실제로 파일이 저장된 경로
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -15,13 +19,8 @@ const File = sequelize.define('File', {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  filePath: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
 }, {
   timestamps: true,
-  paranoid: true,
 });
 
 export default File;

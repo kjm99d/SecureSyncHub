@@ -15,7 +15,7 @@ const FilePolicy = sequelize.define('FilePolicy', {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  /*
+
   userId: {
     type: DataTypes.UUID,
     references: {
@@ -33,7 +33,6 @@ const FilePolicy = sequelize.define('FilePolicy', {
     },
     allowNull: false,
   },
-  */
 }, {
   timestamps: true,
 });
