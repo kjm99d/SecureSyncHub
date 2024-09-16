@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import Models from '../models/index.js';
-const { User } = Models;
+const { User, File, FilePolicy } = Models;
 
-import Jwt from '../config/jwt.js'; // 환경 변수 설정
-const { JWT_SECRET, JWT_EXPIRATION } = Jwt;
+import JwtConfig from '../config/jwt.js'; // 환경 변수 설정
+const { JWT_SECRET, JWT_EXPIRATION } = JwtConfig;
 
 // 회원가입
 const registerUser = async (req, res) => {
@@ -23,7 +23,7 @@ const registerUser = async (req, res) => {
 };
 
 // 로그인
-export const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -67,20 +67,39 @@ const findPolicy = async (req, res) => {
     }
 
     // 토큰 검증
+    console.log("1", token);
     const decoded = jwt.verify(token, JWT_SECRET);
-    // 토큰이 유효하지 않으면 에러 반환
     if (!decoded) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
+    // 토큰에서 사용자 ID 추출
+    const userId = decoded.id;
 
+    // 사용자 정보와 파일 정책 조회
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: FilePolicy,
+        include: [{
+          model: File,
+          attributes: ['id', 'fileName']
+        }]
+      }]
+    });    
 
-    res.status(201).json({ "result" : "ok" });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 사용자와 연결된 정책 반환
+    res.status(200).json({
+      code: 200,
+      message: 'User policy retrieved successfully',
+      policies: user.FilePolicies  // 사용자에 할당된 파일 정책들
+    });
 
   } catch (error) {
-
-    res.status(400).json({ error: 'Error find policy error' });
-
+    res.status(400).json({ error: 'Error retrieving policy' });
   }
 };
 
