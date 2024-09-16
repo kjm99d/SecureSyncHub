@@ -8,8 +8,6 @@ import Log from './Log.js';
 // 관계 설정 (ES Modules 방식으로 변환)
 import './associations.js';
 
-
-
 export default {
   User,
   File,

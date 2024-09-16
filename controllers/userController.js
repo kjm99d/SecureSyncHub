@@ -11,7 +11,12 @@ const registerUser = async (req, res) => {
   try {
     const { username, password, email } = req.body;
     const newUser = await User.create({ username, password, email });
-    res.status(201).json(newUser);
+
+    // 비밀번호 필드 제거
+    const userData = newUser.toJSON();
+    delete userData.password;
+
+    res.status(201).json(userData);
   } catch (error) {
     res.status(400).json({ error: 'Error creating user' });
   }
@@ -62,9 +67,7 @@ const findPolicy = async (req, res) => {
     }
 
     // 토큰 검증
-    console.log(token, JWT_SECRET);
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log("next");
     // 토큰이 유효하지 않으면 에러 반환
     if (!decoded) {
       return res.status(401).json({ error: 'Invalid token' });

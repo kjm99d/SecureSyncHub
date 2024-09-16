@@ -7,12 +7,15 @@ import sequelize from '../config/database.js'; // Sequelize 설정 파일 경로
 
 import User from '../models/User.js'; // User 모델 파일 경로
 
+// Command Line : NODE_ENV=test npx mocha test/user.test.js
 
 describe('POST /api/v1/users/register', () => {
 
   before(async () => {
-    await sequelize.sync();
-    await User.destroy({ where : {} });
+    await sequelize.sync({ 
+      force: true 
+    });
+    // await User.destroy({ where: {} });
   });
 
 
@@ -32,7 +35,7 @@ describe('POST /api/v1/users/register', () => {
     expect(res.status).to.equal(201);
     expect(res.body).to.have.property('username', newUser.username);
     expect(res.body).to.have.property('email', newUser.email);
-    //expect(res.body).to.not.have.property('password'); // 비밀번호는 응답에 포함되지 않음
+    expect(res.body).to.not.have.property('password'); // 비밀번호는 응답에 포함되지 않음
   });
 
   // CASE 2

@@ -10,7 +10,7 @@ const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'unique_username', // 인덱스 이름 지정
   },
   password: {
     type: DataTypes.STRING,
@@ -19,7 +19,7 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'unique_email', // 인덱스 이름 지정
   },
   role: {
     type: DataTypes.ENUM('user', 'admin'),
