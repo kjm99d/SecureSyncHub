@@ -4,7 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 
-const { File } = Models;
+const { FilePolicy, User, File } = Models;
 
 const getUsers = async (req, res) => {
   try {
@@ -200,6 +200,74 @@ const deleteFile = async (req, res) => {
   }
 };
 
+
+const assignFilePolicy = async (req, res) => {
+  const { userId, fileId } = req.params;
+  const { policyType, accessExpiry } = req.body;  // 정책에 대한 정보
+
+  try {
+    // 사용자와 파일이 존재하는지 확인
+    const user = await User.findByPk(userId);
+    const file = await File.findByPk(fileId);
+
+    if (!user || !file) {
+      return res.status(404).json({
+        code: 404,
+        message: `User or File not found.`
+      });
+    }
+
+    // 새로운 파일 정책 생성
+    const filePolicy = await FilePolicy.create({
+      userId: user.id,
+      fileId: file.id,
+      policyType: policyType,   // 정책 유형 (예: 읽기, 쓰기, 다운로드 제한 등)
+      accessExpiry: accessExpiry // 정책 만료일
+    });
+
+    res.status(201).json({
+      code: 201,
+      message: `File policy assigned successfully to user ${userId}.`,
+      filePolicy
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error assigning file policy.',
+      error: error.message
+    });
+  }
+};
+
+const updateFilePolicy = async (req, res) => {
+  const { policyId } = req.params;
+  const updatedPolicyData = req.body;
+
+  try {
+    const filePolicy = await FilePolicy.findByPk(policyId);
+    if (!filePolicy) {
+      return res.status(404).json({
+        code: 404,
+        message: `File policy with ID ${policyId} not found.`
+      });
+    }
+
+    await filePolicy.update(updatedPolicyData);  // 파일 정책 업데이트
+
+    res.status(200).json({
+      code: 200,
+      message: `File policy ${policyId} updated successfully.`,
+      filePolicy
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error updating file policy.',
+      error: error.message
+    });
+  }
+};
+
 export default {
   getUsers,
   createUser,
@@ -208,5 +276,7 @@ export default {
   getFiles,
   upload,
   uploadFile,
-  deleteFile
+  deleteFile,
+  assignFilePolicy,
+  updateFilePolicy
 }
