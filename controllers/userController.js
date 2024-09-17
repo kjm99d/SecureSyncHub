@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 import bcrypt from 'bcrypt';
 import Models from '../models/index.js';
-const { User, File, FilePolicy } = Models;
+const { User, File, FilePolicy, ProxyUrl } = Models;
 
 import JwtConfig from '../config/jwt.js'; // 환경 변수 설정
 const { JWT_SECRET, JWT_EXPIRATION } = JwtConfig;
@@ -56,7 +57,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// 사용자 정책 조회 API
 const findPolicy = async (req, res) => {
   try {
     // 헤더에서 Authorization 토큰 가져오기
@@ -67,8 +67,7 @@ const findPolicy = async (req, res) => {
     }
 
     // 토큰 검증
-    console.log("1", token);
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET); // JWT_SECRET은 환경변수로 설정
     if (!decoded) {
       return res.status(401).json({ error: 'Invalid token' });
     }
@@ -80,25 +79,56 @@ const findPolicy = async (req, res) => {
     const user = await User.findByPk(userId, {
       include: [{
         model: FilePolicy,
-        include: [{
+        attributes: ['id', 'downloadFilePath'],
+        include: [{  // File 모델을 추가로 포함
           model: File,
-          attributes: ['id', 'fileName']
+          attributes: ['id']
         }]
       }]
-    });    
+    });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // 파일 정책에 대한 Proxy URL 생성
+    const policiesWithProxyUrl = await Promise.all(user.FilePolicies.map(async (policy) => {
+      // File이 존재하는지 확인 (정책에 File이 연결되어 있지 않은 경우 대비)
+      if (!policy.File) {
+        return {
+          ...policy.toJSON(),
+          proxyUrl: null, // File이 없을 경우 Proxy URL을 생성하지 않음
+        };
+      }
+
+      const fileId = policy.File.id;
+
+      // Proxy URL 생성
+      const url = `/proxy/${uuidv4()}`;
+
+      // Proxy URL 저장 (userId도 함께 저장)
+      const proxyUrl = await ProxyUrl.create({
+        url,
+        userId: user.id,  // user의 id를 저장
+        fileId
+      });
+
+      // Proxy URL을 정책과 함께 반환
+      return {
+        ...policy.toJSON(), // 기존 정책 정보
+        proxyUrl: proxyUrl.url  // Proxy URL 추가
+      };
+    }));
+
     // 사용자와 연결된 정책 반환
     res.status(200).json({
       code: 200,
       message: 'User policy retrieved successfully',
-      policies: user.FilePolicies  // 사용자에 할당된 파일 정책들
+      policies: policiesWithProxyUrl  // Proxy URL이 추가된 정책 반환
     });
 
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: 'Error retrieving policy' });
   }
 };

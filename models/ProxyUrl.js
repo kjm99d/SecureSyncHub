@@ -11,8 +11,12 @@ const ProxyUrl = sequelize.define('ProxyUrl', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  expiresAt: {
-    type: DataTypes.DATE,
+  userId: {  // 사용자별로 Proxy URL을 관리하기 위한 필드
+    type: DataTypes.UUID,
+    references: {
+      model: 'Users',
+      key: 'id',
+    },
     allowNull: false,
   },
   fileId: {

@@ -21,6 +21,10 @@ const User = sequelize.define('User', {
     allowNull: false,
     unique: 'unique_email', // 인덱스 이름 지정
   },
+  point: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
   role: {
     type: DataTypes.ENUM('user', 'admin'),
     defaultValue: 'user',

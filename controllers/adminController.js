@@ -2,6 +2,7 @@
 import Models from '../models/index.js'; // Sequelize 모델에서 File 가져오기
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 
 const { FilePolicy, User, File } = Models;
@@ -203,38 +204,38 @@ const deleteFile = async (req, res) => {
 
 const assignFilePolicy = async (req, res) => {
   const { userId, fileId } = req.params;
-  const { policyType, accessExpiry } = req.body;  // 정책에 대한 정보
+  const { downloadType, downloadFilePath } = req.body;
 
   try {
-    // 사용자와 파일이 존재하는지 확인
+    // 사용자와 파일이 있는지 확인
     const user = await User.findByPk(userId);
     const file = await File.findByPk(fileId);
 
     if (!user || !file) {
       return res.status(404).json({
         code: 404,
-        message: `User or File not found.`
+        message: 'User or File not found',
       });
     }
-
-    // 새로운 파일 정책 생성
+    
+    // FilePolicy에 사용자와 파일 매핑 및 정책 할당
     const filePolicy = await FilePolicy.create({
       userId: user.id,
       fileId: file.id,
-      policyType: policyType,   // 정책 유형 (예: 읽기, 쓰기, 다운로드 제한 등)
-      accessExpiry: accessExpiry // 정책 만료일
+      downloadType,       // 다운로드 방법 (file, memory)
+      downloadFilePath,   // 새로운 파일 이름 (선택 사항)
     });
 
     res.status(201).json({
       code: 201,
-      message: `File policy assigned successfully to user ${userId}.`,
-      filePolicy
+      message: `File policy assigned to user '${userId}' for file '${fileId}'.`,
+      filePolicy,
     });
   } catch (error) {
     res.status(500).json({
       code: 500,
       message: 'Error assigning file policy.',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -248,7 +249,7 @@ const updateFilePolicy = async (req, res) => {
     if (!filePolicy) {
       return res.status(404).json({
         code: 404,
-        message: `File policy with ID ${policyId} not found.`
+        message: `File policy with ID '${policyId}' not found.`
       });
     }
 
@@ -256,7 +257,7 @@ const updateFilePolicy = async (req, res) => {
 
     res.status(200).json({
       code: 200,
-      message: `File policy ${policyId} updated successfully.`,
+      message: `File policy '${policyId}' updated successfully.`,
       filePolicy
     });
   } catch (error) {

@@ -7,11 +7,11 @@ const FilePolicy = sequelize.define('FilePolicy', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  downloadMethod: {
-    type: DataTypes.ENUM('direct', 'proxy'),
+  downloadType: {
+    type: DataTypes.ENUM('file', 'memory'),
     allowNull: false,
   },
-  newFilename: {
+  downloadFilePath: {
     type: DataTypes.STRING,
     allowNull: true,
   },
