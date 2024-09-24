@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="/styles.css"> <!-- 스타일 시트를 연결하고 싶다면 여기에 추가 -->
+</head>
+<body>
+  <div class="container">
+    <h1>Sign Up</h1>
+    <form action="/signup" method="POST">
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+      </div>
+
+      <div class="form-group">
+        <button type="submit">Sign Up</button>
+      </div>
+    </form>
+
+    <div class="login">
+      <p>Already have an account?</p>
+      <a href="/">Login</a> <!-- 로그인 페이지로 이동하는 링크 -->
+    </div>
+  </div>
+
+</body>
+</html>
