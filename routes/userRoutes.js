@@ -1,6 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { registerUser, loginUser, findPolicy, getUsers } = require('../controllers/userController');
+
+import userController from '../controllers/userController.js';
+
+const { registerUser, loginUser, findPolicy, getUsers } = userController;
 
 // 회원가입
 router.post('/register', registerUser);
@@ -15,4 +18,4 @@ router.post('/policies', findPolicy);
 // 사용자 목록 조회
 router.get('/', getUsers);
 
-module.exports = router;
+export default router;

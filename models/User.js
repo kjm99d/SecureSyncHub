@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const User = sequelize.define('User', {
   id: {
@@ -10,7 +10,7 @@ const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'unique_username', // 인덱스 이름 지정
   },
   password: {
     type: DataTypes.STRING,
@@ -19,7 +19,11 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'unique_email', // 인덱스 이름 지정
+  },
+  point: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
   role: {
     type: DataTypes.ENUM('user', 'admin'),
@@ -39,7 +43,6 @@ const User = sequelize.define('User', {
   }
 }, {
   timestamps: true,
-  paranoid: true,  // for soft delete
 });
 
-module.exports = User;
+export default User;

@@ -1,76 +1,283 @@
 // controllers/adminController.js
+import Models from '../models/index.js'; // Sequelize 모델에서 File 가져오기
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 
-// 사용자 목록 조회
-exports.getUsers = (req, res) => {
-    // 실제로는 DB에서 사용자 목록을 조회하는 로직을 작성해야 함
+const { FilePolicy, User, File } = Models;
+
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.findAll(); // DB에서 모든 사용자 조회
+
     res.status(200).json({
       code: 200,
       message: 'User list retrieved successfully.',
-      users: []  // 예시 데이터
+      users  // 조회한 사용자 목록 반환
     });
-  };
-  
-  // 새 사용자 추가
-  exports.createUser = (req, res) => {
-    const newUser = req.body;
-    // 실제로는 DB에 새 사용자를 저장하는 로직을 작성해야 함
-    res.status(201).json({
-      code: 201,
-      message: 'New user created successfully.',
-      user: newUser
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error retrieving user list.',
+      error: error.message
     });
-  };
+  }
+};
+
+// 새 사용자 추가 ( 과연 필요할까? 회원가입에서 취급이 되는 것 같던데. )
+const createUser = (req, res) => {
+  const newUser = req.body;
+  // 실제로는 DB에 새 사용자를 저장하는 로직을 작성해야 함
+  res.status(201).json({
+    code: 201,
+    message: 'New user created successfully.',
+    user: newUser
+  });
+};
+
+// 사용자 정보 수정
+const updateUser = async (req, res) => {
+  const userId = req.params.id;
+  const updatedUserData = req.body;
   
-  // 사용자 정보 수정
-  exports.updateUser = (req, res) => {
-    const userId = req.params.id;
-    const updatedUserData = req.body;
-    // 실제로는 DB에서 사용자 정보를 업데이트하는 로직을 작성해야 함
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        message: `User with ID ${userId} not found.`
+      });
+    }
+
+    await user.update(updatedUserData);  // DB에서 사용자 정보 업데이트
+
     res.status(200).json({
       code: 200,
       message: `User ${userId} updated successfully.`,
       user: updatedUserData
     });
-  };
-  
-  // 사용자 삭제
-  exports.deleteUser = (req, res) => {
-    const userId = req.params.id;
-    // 실제로는 DB에서 사용자를 삭제하는 로직을 작성해야 함
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error updating user information.',
+      error: error.message
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        message: `User with ID ${userId} not found.`
+      });
+    }
+
+    await user.destroy();  // DB에서 사용자 삭제
+
     res.status(200).json({
       code: 200,
       message: `User ${userId} deleted successfully.`
     });
-  };
-  
-  // 파일 목록 조회
-  exports.getFiles = (req, res) => {
-    // 실제로는 DB에서 파일 목록을 조회하는 로직을 작성해야 함
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error deleting user.',
+      error: error.message
+    });
+  }
+};
+
+// 파일 목록 조회
+const getFiles = async (req, res) => {
+  try {
+    const files = await File.findAll();  // DB에서 파일 목록 조회
     res.status(200).json({
       code: 200,
       message: 'File list retrieved successfully.',
-      files: []  // 예시 데이터
+      files  // 조회한 파일 목록을 반환
     });
-  };
-  
-  // 파일 업로드 처리
-  exports.uploadFile = (req, res) => {
-    const newFile = req.body;
-    // 실제로는 파일을 업로드하고 DB에 저장하는 로직을 작성해야 함
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error retrieving file list.',
+      error: error.message
+    });
+  }
+};
+
+// Multer 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/';  // 저장할 폴더 경로
+
+    // 폴더가 없으면 생성
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });  // 하위 폴더까지 생성 가능
+    }
+
+    cb(null, uploadDir);  // 파일이 저장될 폴더로 설정
+  },
+  filename: (req, file, cb) => {
+    const tempFilePath = `${uuidv4()}${path.extname(file.originalname)}`; // 임시 파일 경로(UUID + 확장자)
+    cb(null, tempFilePath);
+  }
+});
+
+const upload = multer({ storage });
+
+// 파일 업로드 처리
+const uploadFile = async (req, res) => {
+  try {
+    const fileData = req.file;  // Multer가 처리한 파일 데이터
+    const { originalname, mimetype, size, filename } = fileData; // 원본 파일명, 파일 형식, 사이즈, 저장된 파일명(경로)
+
+    const newFile = await File.create({
+      id: uuidv4(),
+      fileName: originalname, // 원본 파일명 저장
+      fileType: mimetype,
+      fileSize: size,
+      uploadedAt: new Date(),
+      filePath: `uploads/${filename}` // 실제 파일 경로(UUID로 생성된 임시 경로)
+    });
+
     res.status(201).json({
       code: 201,
       message: 'File uploaded successfully.',
       file: newFile
     });
-  };
-  
-  // 파일 삭제
-  exports.deleteFile = (req, res) => {
-    const fileId = req.params.fileId;
-    // 실제로는 DB에서 파일을 삭제하는 로직을 작성해야 함
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error uploading file.',
+      error: error.message
+    });
+  }
+};
+
+const deleteFile = async (req, res) => {
+  const { fileId } = req.params;
+  try {
+    const file = await File.findByPk(fileId);
+    if (!file) {
+      return res.status(404).json({
+        code: 404,
+        message: `File with ID ${fileId} not found.`
+      });
+    }
+
+    // 파일 경로 가져오기
+    const filePath = path.resolve(file.filePath);
+
+    // 파일이 존재하는지 확인하고 삭제
+    fs.unlink(filePath, async (err) => {
+      if (err) {
+        return res.status(500).json({
+          code: 500,
+          message: 'Error deleting the file from file system.',
+          error: err.message
+        });
+      }
+
+      // DB에서 파일 정보 삭제
+      await file.destroy();
+
+      res.status(200).json({
+        code: 200,
+        message: `File ${fileId} deleted successfully.`
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error deleting file.',
+      error: error.message
+    });
+  }
+};
+
+
+const assignFilePolicy = async (req, res) => {
+  const { userId, fileId } = req.params;
+  const { downloadType, downloadFilePath } = req.body;
+
+  try {
+    // 사용자와 파일이 있는지 확인
+    const user = await User.findByPk(userId);
+    const file = await File.findByPk(fileId);
+
+    if (!user || !file) {
+      return res.status(404).json({
+        code: 404,
+        message: 'User or File not found',
+      });
+    }
+    
+    // FilePolicy에 사용자와 파일 매핑 및 정책 할당
+    const filePolicy = await FilePolicy.create({
+      userId: user.id,
+      fileId: file.id,
+      downloadType,       // 다운로드 방법 (file, memory)
+      downloadFilePath,   // 새로운 파일 이름 (선택 사항)
+    });
+
+    res.status(201).json({
+      code: 201,
+      message: `File policy assigned to user '${userId}' for file '${fileId}'.`,
+      filePolicy,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error assigning file policy.',
+      error: error.message,
+    });
+  }
+};
+
+const updateFilePolicy = async (req, res) => {
+  const { policyId } = req.params;
+  const updatedPolicyData = req.body;
+
+  try {
+    const filePolicy = await FilePolicy.findByPk(policyId);
+    if (!filePolicy) {
+      return res.status(404).json({
+        code: 404,
+        message: `File policy with ID '${policyId}' not found.`
+      });
+    }
+
+    await filePolicy.update(updatedPolicyData);  // 파일 정책 업데이트
+
     res.status(200).json({
       code: 200,
-      message: `File ${fileId} deleted successfully.`
+      message: `File policy '${policyId}' updated successfully.`,
+      filePolicy
     });
-  };
-  
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error updating file policy.',
+      error: error.message
+    });
+  }
+};
+
+export default {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  getFiles,
+  upload,
+  uploadFile,
+  deleteFile,
+  assignFilePolicy,
+  updateFilePolicy
+}

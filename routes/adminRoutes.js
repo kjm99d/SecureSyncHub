@@ -1,17 +1,37 @@
 // routes/adminRoutes.js
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const adminController = require('../controllers/adminController');
+import adminController from '../controllers/adminController.js';
+
+const {   
+    getUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    getFiles,
+    upload,
+    uploadFile,
+    deleteFile,
+    assignFilePolicy,
+    updateFilePolicy
+} = adminController;
 
 // 사용자 관리
-router.get('/users', adminController.getUsers);
-router.post('/users', adminController.createUser);
-router.put('/users/:id', adminController.updateUser);
-router.delete('/users/:id', adminController.deleteUser);
+router.get('/users', getUsers);
+router.post('/users', createUser);
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 
 // 파일 관리
-router.get('/files', adminController.getFiles);
-router.post('/files', adminController.uploadFile);
-router.delete('/files/:fileId', adminController.deleteFile);
+router.get('/files', getFiles);
+router.post('/files', upload.single('file'), uploadFile);
+router.delete('/files/:fileId', deleteFile);
 
-module.exports = router;
+// 파일 정책 관리
+// 사용자에게 파일 정책 할당
+router.post('/users/:userId/files/:fileId/policy', assignFilePolicy);
+
+// 파일 정책 수정
+router.put('/policies/:policyId', updateFilePolicy);
+
+export default router;
