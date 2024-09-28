@@ -15,7 +15,11 @@ const FilePolicy = sequelize.define('FilePolicy', {
     type: DataTypes.STRING,
     allowNull: true,
   },
-
+  priority: {
+    type: DataTypes.INTEGER,  // 우선순위를 나타내는 필드
+    allowNull: false,
+    defaultValue: 0,  // 기본값을 설정할 수 있음 (예: 0)
+  },
   userId: {
     type: DataTypes.UUID,
     references: {
