@@ -5,6 +5,6 @@ import fileController from '../controllers/fileController.js';
 const { downloadFile } = fileController;
 
 // 파일 다운로드
-router.post('/download', downloadFile);
+router.get('/proxy/:proxyKey', downloadFile);
 
 export default router;
