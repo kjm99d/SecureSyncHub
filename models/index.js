@@ -1,24 +1,14 @@
-const sequelize = require('../config/database');
-const User = require('./User');
-const File = require('./File');
-const FilePolicy = require('./FilePolicy');
-const ProxyUrl = require('./ProxyUrl');
-const Device = require('./Device');
-const Log = require('./Log');
+import User from './User.js';
+import File from './File.js';
+import FilePolicy from './FilePolicy.js';
+import ProxyUrl from './ProxyUrl.js';
+import Device from './Device.js';
+import Log from './Log.js';
 
-// 관계 설정
-require('./associations');
+// 관계 설정 (ES Modules 방식으로 변환)
+import './associations.js';
 
-// 데이터베이스 초기화
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log('Database synchronized');
-  })
-  .catch((err) => {
-    console.error('Error syncing database:', err);
-  });
-
-module.exports = {
+export default {
   User,
   File,
   FilePolicy,

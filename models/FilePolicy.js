@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const FilePolicy = sequelize.define('FilePolicy', {
   id: {
@@ -7,13 +7,18 @@ const FilePolicy = sequelize.define('FilePolicy', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  downloadMethod: {
-    type: DataTypes.ENUM('direct', 'proxy'),
+  downloadType: {
+    type: DataTypes.ENUM('file', 'memory'),
     allowNull: false,
   },
-  newFilename: {
+  downloadFilePath: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  priority: {
+    type: DataTypes.INTEGER,  // 우선순위를 나타내는 필드
+    allowNull: false,
+    defaultValue: 0,  // 기본값을 설정할 수 있음 (예: 0)
   },
   userId: {
     type: DataTypes.UUID,
@@ -23,6 +28,7 @@ const FilePolicy = sequelize.define('FilePolicy', {
     },
     allowNull: false,
   },
+
   fileId: {
     type: DataTypes.UUID,
     references: {
@@ -35,4 +41,4 @@ const FilePolicy = sequelize.define('FilePolicy', {
   timestamps: true,
 });
 
-module.exports = FilePolicy;
+export default FilePolicy;

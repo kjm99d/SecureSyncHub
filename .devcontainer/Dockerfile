@@ -21,13 +21,19 @@ RUN apt-get -y update --no-install-recommends \
     && apt-get clean -y
 
 # Add Node.js repository.
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 
 # Install Node.js.
 RUN apt-get -y update --no-install-recommends \
     && apt-get -y install --no-install-recommends nodejs \
     && apt-get autoremove -y \
     && apt-get clean -y
+
+# Add nodemon globally
+RUN npm install -g nodemon
+#RUN npm install
+#RUN npm install --save-dev mocha chai supertest
+
 
 # Create the user.
 RUN groupadd --gid $USER_GID $USERNAME \

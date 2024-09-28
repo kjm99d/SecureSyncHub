@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Device = sequelize.define('Device', {
   id: {
@@ -23,4 +23,4 @@ const Device = sequelize.define('Device', {
   timestamps: true,
 });
 
-module.exports = Device;
+export default Device;

@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const ProxyUrl = sequelize.define('ProxyUrl', {
   id: {
@@ -11,8 +11,12 @@ const ProxyUrl = sequelize.define('ProxyUrl', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  expiresAt: {
-    type: DataTypes.DATE,
+  userId: {  // 사용자별로 Proxy URL을 관리하기 위한 필드
+    type: DataTypes.UUID,
+    references: {
+      model: 'Users',
+      key: 'id',
+    },
     allowNull: false,
   },
   fileId: {
@@ -27,4 +31,4 @@ const ProxyUrl = sequelize.define('ProxyUrl', {
   timestamps: true,
 });
 
-module.exports = ProxyUrl;
+export default ProxyUrl;

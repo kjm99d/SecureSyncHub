@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+import { Sequelize } from 'sequelize';
 
 // Sequelize 인스턴스 생성 (MySQL에 연결)
 const sequelize = new Sequelize(
@@ -9,6 +9,7 @@ const sequelize = new Sequelize(
         host: 'db',
         dialect: 'mysql',  // MySQL 사용
         logging: false,
-    });
+    }
+);
 
-module.exports = sequelize;
+export default sequelize; // 기본 내보내기
