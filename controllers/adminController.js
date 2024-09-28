@@ -204,7 +204,7 @@ const deleteFile = async (req, res) => {
 
 const assignFilePolicy = async (req, res) => {
   const { userId, fileId } = req.params;
-  const { downloadType, downloadFilePath } = req.body;
+  const { downloadType, downloadFilePath, priority } = req.body;
 
   try {
     // 사용자와 파일이 있는지 확인
@@ -224,6 +224,7 @@ const assignFilePolicy = async (req, res) => {
       fileId: file.id,
       downloadType,       // 다운로드 방법 (file, memory)
       downloadFilePath,   // 새로운 파일 이름 (선택 사항)
+      priority,           // 파일의 우선순위
     });
 
     res.status(201).json({
