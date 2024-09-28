@@ -79,11 +79,15 @@ const findPolicy = async (req, res) => {
     const user = await User.findByPk(userId, {
       include: [{
         model: FilePolicy,
-        attributes: ['id', 'downloadFilePath'],
+        attributes: ['id', 'downloadFilePath', "priority"],
+        ///*
+        // 파일 정보는 제외하고 보내는게 맞는 것 같음.
+        // File Key 노출시키는 행위 자체가 좋은게 아니라고 생각된다.
         include: [{  // File 모델을 추가로 포함
           model: File,
           attributes: ['id']
         }]
+        //*/
       }]
     });
 
@@ -104,7 +108,7 @@ const findPolicy = async (req, res) => {
       const fileId = policy.File.id;
 
       // Proxy URL 생성
-      const url = `/proxy/${uuidv4()}`;
+      const url = `${uuidv4()}`;
 
       // Proxy URL 저장 (userId도 함께 저장)
       const proxyUrl = await ProxyUrl.create({
