@@ -10,6 +10,7 @@ const Device = sequelize.define('Device', {
   fingerprint: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   userId: {
     type: DataTypes.UUID,
