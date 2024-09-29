@@ -22,7 +22,7 @@ const Device = sequelize.define('Device', {
   },
   isAllowed: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false,  // 기본값을 false로 설정
+    defaultValue: true,  // 기본값을 false로 설정
     allowNull: false,
   },
 }, {

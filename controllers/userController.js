@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 import bcrypt from 'bcrypt';
 import Models from '../models/index.js';
-const { User, File, FilePolicy, ProxyUrl } = Models;
+const { User, File, FilePolicy, ProxyUrl, Device } = Models;
 
 import JwtConfig from '../config/jwt.js'; // 환경 변수 설정
 const { JWT_SECRET, JWT_EXPIRATION } = JwtConfig;
@@ -75,16 +75,21 @@ const loginUser = async (req, res) => {
     // ======================================================================================== //
     // 4. 마지막 로그인 장치와 다른 장치인지 확인
     // ======================================================================================== //
-    if (user.lastLoginDeviceId !== device.id) {
-      const cooldownHours = user.loginCooldownHour; // 사용자별 쿨다운 시간
-      const now = new Date();
-      const lastLoginAt = new Date(user.lastLoginAt);
-      const diffInHours = Math.abs(now - lastLoginAt) / 36e5; // 시간 단위로 차이 계산
+    if (!user.lastLoginDeviceId || user.lastLoginDeviceId !== device.id) {
+      // 마지막 로그인 장치가 없으면 현재 로그인 장치로 업데이트
+      if (!user.lastLoginDeviceId) {
+        user.lastLoginDeviceId = device.id;
+      } else {
+        const cooldownHours = user.loginCooldownHour; // 사용자별 쿨다운 시간
+        const now = new Date();
+        const lastLoginAt = new Date(user.lastLoginAt);
+        const diffInHours = Math.abs(now - lastLoginAt) / 36e5; // 시간 단위로 차이 계산
 
-      if (diffInHours < cooldownHours) {
-        return res.status(429).json({
-          error: `Please wait ${cooldownHours - diffInHours.toFixed(1)} more hours to login from this device.`,
-        });
+        if (diffInHours < cooldownHours) {
+          return res.status(429).json({
+            error: `Please wait ${cooldownHours - diffInHours.toFixed(1)} more hours to login from this device.`,
+          });
+        }
       }
     }
     // ======================================================================================== //
@@ -112,7 +117,7 @@ const loginUser = async (req, res) => {
     // ======================================================================================== //
     // 오류 처리
     // ======================================================================================== //
-    console.error(error);
+     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,  // 마지막 로그인 시간을 저장
     allowNull: true,  // 첫 로그인일 때는 null일 수 있습니다.
   },
-  loginCooldownEnabled: {
+  loginCooldownHour: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
