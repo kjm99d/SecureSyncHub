@@ -42,8 +42,8 @@ const User = sequelize.define('User', {
     allowNull: true,  // 첫 로그인일 때는 null일 수 있습니다.
   },
   loginCooldownEnabled: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
 }, {
   timestamps: true,

@@ -26,8 +26,10 @@ const registerUser = async (req, res) => {
 // 로그인
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
-
+    const { username, password, fingerprint } = req.body; // fingerprint를 요청 본문에서 받음
+    // ======================================================================================== //
+    // # 기본 로그인 로직 ( ID + PW 검증 )
+    // ======================================================================================== //
     const user = await User.findOne({ where: { username } });
 
     if (!user) {
@@ -35,23 +37,81 @@ const loginUser = async (req, res) => {
     }
 
     // 비밀번호 확인
-    //const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (password != user.password) {
+    if (password !== user.password) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
+    // ======================================================================================== //
+    // 1. loginCooldownHour가 0이면 쿨다운 및 디바이스 확인 없이 바로 로그인
+    // ======================================================================================== //
+    if (user.loginCooldownHour === 0) {
+      // 바로 JWT 토큰 생성
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRATION || '1h' }
+      );
+
+      // 마지막 로그인 시간 업데이트
+      user.lastLoginAt = new Date();
+      await user.save();
+
+      const { password: _, ...userWithoutPassword } = user.toJSON();
+      return res.status(200).json({ user: userWithoutPassword, token });
+    }
+    // ======================================================================================== //
+    // 2. 쿨다운 시간이 0이 아닌 경우에만 디바이스 정보 확인
+    // ======================================================================================== //
+    let device = await Device.findOne({ where: { fingerprint, userId: user.id } });
+    if (!device) {
+      device = await Device.create({ fingerprint, userId: user.id });
+    }
+    // ======================================================================================== //
+    // 3. 허용된 장치인지 확인
+    // ======================================================================================== //
+    if (!device.isAllowed) {
+      return res.status(403).json({ error: 'This device is not allowed for login.' });
+    }
+    // ======================================================================================== //
+    // 4. 마지막 로그인 장치와 다른 장치인지 확인
+    // ======================================================================================== //
+    if (user.lastLoginDeviceId !== device.id) {
+      const cooldownHours = user.loginCooldownHour; // 사용자별 쿨다운 시간
+      const now = new Date();
+      const lastLoginAt = new Date(user.lastLoginAt);
+      const diffInHours = Math.abs(now - lastLoginAt) / 36e5; // 시간 단위로 차이 계산
+
+      if (diffInHours < cooldownHours) {
+        return res.status(429).json({
+          error: `Please wait ${cooldownHours - diffInHours.toFixed(1)} more hours to login from this device.`,
+        });
+      }
+    }
+    // ======================================================================================== //
     // JWT 토큰 생성
+    // ======================================================================================== //
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role }, // 토큰에 포함할 정보 (payload)
-      JWT_SECRET, // 비밀키 (서버에만 존재)
-      { expiresIn: JWT_EXPIRATION || '1h' } // 토큰 만료 시간 설정 (기본 1시간)
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION || '1h' }
     );
 
+    // ======================================================================================== //
+    // 마지막 로그인 장치 및 시간 업데이트
+    // ======================================================================================== //
+    user.lastLoginDeviceId = device.id;
+    user.lastLoginAt = new Date();
+    await user.save();
+    // ======================================================================================== //
     // 비밀번호는 제외하고 사용자 정보와 토큰 반환
+    // ======================================================================================== //
     const { password: _, ...userWithoutPassword } = user.toJSON();
     res.status(200).json({ user: userWithoutPassword, token });
 
   } catch (error) {
+    // ======================================================================================== //
+    // 오류 처리
+    // ======================================================================================== //
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
