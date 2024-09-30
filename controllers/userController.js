@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 import bcrypt from 'bcrypt';
 import Models from '../models/index.js';
-const { User, File, FilePolicy, ProxyUrl, Device } = Models;
+const { User, File, FilePolicy, ProxyUrl, Device, UserPolicy, Policy } = Models;
 
 import JwtConfig from '../config/jwt.js'; // 환경 변수 설정
 const { JWT_SECRET, JWT_EXPIRATION } = JwtConfig;
@@ -140,27 +140,35 @@ const findPolicy = async (req, res) => {
     // 토큰에서 사용자 ID 추출
     const userId = decoded.id;
 
-    // 사용자 정보와 파일 정책 조회
+    // 사용자 정보와 파일 정책 및 사용자 정책 조회
     const user = await User.findByPk(userId, {
-      include: [{
-        model: FilePolicy,
-        attributes: ['id', 'downloadFilePath', "priority"],
-        ///*
-        // 파일 정보는 제외하고 보내는게 맞는 것 같음.
-        // File Key 노출시키는 행위 자체가 좋은게 아니라고 생각된다.
-        include: [{  // File 모델을 추가로 포함
-          model: File,
-          attributes: ['id']
-        }]
-        //*/
-      }]
+      include: [
+        {
+          model: FilePolicy,
+          attributes: ['id', 'downloadFilePath', 'priority'],
+          include: [{  
+            model: File,
+            attributes: ['id']
+          }]
+        },
+        {
+          model: UserPolicy,
+          attributes: ['policyId'],
+          include: [{  
+            model: Policy,
+            attributes: ['policyName']
+          }]
+        }
+      ]
     });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // ============================================================================================ //
     // 파일 정책에 대한 Proxy URL 생성
+    // ============================================================================================ //
     const policiesWithProxyUrl = await Promise.all(user.FilePolicies.map(async (policy) => {
       // File이 존재하는지 확인 (정책에 File이 연결되어 있지 않은 경우 대비)
       if (!policy.File) {
@@ -188,17 +196,19 @@ const findPolicy = async (req, res) => {
         proxyUrl: proxyUrl.url  // Proxy URL 추가
       };
     }));
-
-    // 사용자와 연결된 정책 반환
+    // ============================================================================================ //
+    // 사용자 정책과 파일 정책을 함께 반환
+    // ============================================================================================ //
     res.status(200).json({
       code: 200,
-      message: 'User policy retrieved successfully',
-      policies: policiesWithProxyUrl  // Proxy URL이 추가된 정책 반환
+      message: 'User and file policies retrieved successfully',
+      userPolicy: user.UserPolicies, // 사용자 정책 추가
+      filePolicy: policiesWithProxyUrl  // Proxy URL이 추가된 파일 정책 반환
     });
 
   } catch (error) {
     console.error(error);
-    res.status(400).json({ error: 'Error retrieving policy' });
+    res.status(400).json({ error: 'Error retrieving policies' });
   }
 };
 
