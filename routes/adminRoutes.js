@@ -15,7 +15,9 @@ const {
     assignFilePolicy,
     deleteFilePolicy,
     updateFilePolicy,
-    getUserPolicyAndFilePolicy
+    getUserPolicyAndFilePolicy,
+    getPolicy,
+    addPolicy
 } = adminController;
 
 // 사용자 관리
@@ -32,13 +34,16 @@ router.get('/files', getFiles);
 router.post('/files', upload.single('file'), uploadFile);
 router.delete('/files/:fileId', deleteFile);
 
-
-
 // 파일 정책 관리
 // 사용자에게 파일 정책 할당
 router.post('/users/:userId/files/:fileId/policy', assignFilePolicy);
 router.delete('/users/:userId/files/:fileId/policy', deleteFilePolicy);
 
+// 정책 관리
+router.get("/policy", getPolicy);
+router.put("/policy", addPolicy);
+
+// 사용자 정책관리
 
 // 파일 정책 수정
 router.put('/policies/:policyId', updateFilePolicy);

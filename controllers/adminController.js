@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 
-const { FilePolicy, User, File } = Models;
+const { FilePolicy, User, File, Policy } = Models;
 
 const getUsers = async (req, res) => {
   try {
@@ -338,6 +338,58 @@ const deleteFilePolicy = async (req, res) => {
   }
 };
 
+const getPolicy = async (req, res) => {
+  try {
+    // 데이터베이스에서 정책 목록을 조회
+    const policies = await Policy.findAll();
+
+    res.status(200).json({
+      code: 200,
+      message: 'Policies retrieved successfully.',
+      policies,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error retrieving policies.',
+      error: error.message,
+    });
+  }
+};
+
+const addPolicy = async (req, res) => {
+  const { policyName, description } = req.body;
+
+  try {
+    // 정책 이름이 이미 있는지 확인
+    const existingPolicy = await Policy.findOne({ where: { policyName } });
+
+    if (existingPolicy) {
+      return res.status(400).json({
+        code: 400,
+        message: 'Policy with this name already exists.',
+      });
+    }
+
+    // 새로운 정책 추가
+    const policy = await Policy.create({
+      policyName,
+      description,
+    });
+
+    res.status(201).json({
+      code: 201,
+      message: 'Policy added successfully.',
+      policy,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error adding policy.',
+      error: error.message,
+    });
+  }
+};
 
 export default {
   getUsers,
@@ -352,4 +404,6 @@ export default {
   deleteFilePolicy,
   updateFilePolicy,
   getUserPolicyAndFilePolicy,
+  getPolicy,
+  addPolicy,
 }
