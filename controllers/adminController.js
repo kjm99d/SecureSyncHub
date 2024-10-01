@@ -39,7 +39,7 @@ const createUser = (req, res) => {
 // 사용자 정보 수정
 const updateUser = async (req, res) => {
   const userId = req.params.id;
-  const updatedUserData = req.body;
+  const { role, loginCooldownHour, point, accountExpiry, lastLoginAt } = req.body;  // 필요한 필드만 추출
   
   try {
     const user = await User.findByPk(userId);
@@ -50,12 +50,13 @@ const updateUser = async (req, res) => {
       });
     }
 
-    await user.update(updatedUserData);  // DB에서 사용자 정보 업데이트
+    // 업데이트할 필드만 전달
+    await user.update({ role, loginCooldownHour, point, accountExpiry, lastLoginAt });
 
     res.status(200).json({
       code: 200,
       message: `User ${userId} updated successfully.`,
-      user: updatedUserData
+      user: { role, loginCooldownHour, point, accountExpiry, lastLoginAt }
     });
   } catch (error) {
     res.status(500).json({
