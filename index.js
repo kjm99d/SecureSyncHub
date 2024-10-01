@@ -6,7 +6,11 @@ import fileRoutes from './routes/fileRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import sequelize from './config/database.js';
 
+import cors from 'cors';
+
 const app = express();
+
+app.use(cors());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
