@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // UUID 생성용 패키지
 
-const { FilePolicy, User, File, Policy } = Models;
+const { FilePolicy, User, File, Policy, UserPolicy } = Models;
 
 const getUsers = async (req, res) => {
   try {
@@ -284,23 +284,37 @@ const getUserPolicyAndFilePolicy = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // 사용자의 파일 정책과 파일 정보 조회
+    // 사용자의 파일 정책, 파일 정보와 사용자 정책을 조회
     const user = await User.findByPk(userId, {
-      include: {
-        model: FilePolicy,
-        as: 'filePolicies',
-        include: {
-          model: File,  // File 정보 포함
-          attributes: ['id', 'fileName', 'createdAt'],  // 필요한 파일 정보만 가져옴
+      include: [
+        {
+          model: FilePolicy,
+          as: 'filePolicies',
+          include: {
+            model: File,  // File 정보 포함
+            attributes: ['id', 'fileName', 'createdAt'],  // 필요한 파일 정보만 가져옴
+          },
         },
-      },
+        {
+          model: UserPolicy,  // 사용자 정책 정보 포함
+          as: 'UserPolicies', // 별칭을 관계 정의 시 사용한 별칭으로 수정
+          attributes: ['id', 'policyId', 'policyValue'],  // 필요한 사용자 정책 정보만 가져옴
+          include: [{  
+            model: Policy,
+            attributes: ['id', 'policyName']
+          }]
+        },
+      ],
     });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ policies: user.filePolicies });
+    res.json({
+      filePolicies: user.filePolicies,
+      userPolicies: user.UserPolicies,  // 사용자 정책 추가
+    });
   } catch (error) {
     console.error('Error fetching user policies:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -392,6 +406,44 @@ const addPolicy = async (req, res) => {
   }
 };
 
+const assignUserPolicy = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { policyId, policyValue } = req.body;  // 정책 ID와 정책에 대한 추가 정보
+
+    const newUserPolicy = await UserPolicy.create({
+      userId,
+      policyId,
+      policyValue
+    });
+
+    res.status(201).json({
+      message: 'User policy assigned successfully',
+      policy: newUserPolicy
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error assigning policy', error });
+  }
+};
+
+const deleteUserPolicy = async (req, res) => {
+  try {
+    const { userId, policyId } = req.params;
+
+    const deletedPolicy = await UserPolicy.destroy({
+      where: { userId, policyId }
+    });
+
+    if (deletedPolicy) {
+      res.status(200).json({ message: 'User policy deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Policy not found for the user' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting policy', error });
+  }
+};
+
 export default {
   getUsers,
   createUser,
@@ -407,4 +459,6 @@ export default {
   getUserPolicyAndFilePolicy,
   getPolicy,
   addPolicy,
+  assignUserPolicy,
+  deleteUserPolicy,
 }
