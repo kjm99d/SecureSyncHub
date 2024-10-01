@@ -33,3 +33,6 @@ UserPolicy.belongsTo(User, { foreignKey: 'userId', onDelete: 'cascade' });
 
 // UserPolicy and Policy
 UserPolicy.belongsTo(Policy, { foreignKey: 'policyId', onDelete: 'cascade' });
+
+User.hasMany(FilePolicy, { foreignKey: 'userId', as: 'filePolicies' });
+FilePolicy.belongsTo(User, { foreignKey: 'userId' });

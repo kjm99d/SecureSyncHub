@@ -227,10 +227,18 @@ const assignFilePolicy = async (req, res) => {
       priority,           // 파일의 우선순위
     });
 
+    // 정책 생성 후, File 정보 포함해서 다시 조회
+    const createdFilePolicy = await FilePolicy.findByPk(filePolicy.id, {
+      include: {
+        model: File,
+        attributes: ['id', 'fileName', 'createdAt'], // 필요한 파일 정보만 가져옴
+      },
+    });
+
     res.status(201).json({
       code: 201,
       message: `File policy assigned to user '${userId}' for file '${fileId}'.`,
-      filePolicy,
+      filePolicy: createdFilePolicy,  // 생성된 정책과 파일 정보를 포함해서 반환
     });
   } catch (error) {
     res.status(500).json({
@@ -240,6 +248,7 @@ const assignFilePolicy = async (req, res) => {
     });
   }
 };
+
 
 const updateFilePolicy = async (req, res) => {
   const { policyId } = req.params;
@@ -270,6 +279,66 @@ const updateFilePolicy = async (req, res) => {
   }
 };
 
+const getUserPolicyAndFilePolicy = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // 사용자의 파일 정책과 파일 정보 조회
+    const user = await User.findByPk(userId, {
+      include: {
+        model: FilePolicy,
+        as: 'filePolicies',
+        include: {
+          model: File,  // File 정보 포함
+          attributes: ['id', 'fileName', 'createdAt'],  // 필요한 파일 정보만 가져옴
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ policies: user.filePolicies });
+  } catch (error) {
+    console.error('Error fetching user policies:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const deleteFilePolicy = async (req, res) => {
+  const { userId, fileId } = req.params;
+
+  try {
+    // 해당 사용자와 파일의 파일 정책을 찾음
+    const filePolicy = await FilePolicy.findOne({
+      where: { userId, fileId }
+    });
+
+    if (!filePolicy) {
+      return res.status(404).json({
+        code: 404,
+        message: 'File policy not found for the specified user and file.',
+      });
+    }
+
+    // 파일 정책 삭제
+    await filePolicy.destroy();
+
+    res.status(200).json({
+      code: 200,
+      message: `File policy for user '${userId}' and file '${fileId}' has been deleted.`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: 'Error deleting file policy.',
+      error: error.message,
+    });
+  }
+};
+
+
 export default {
   getUsers,
   createUser,
@@ -280,5 +349,7 @@ export default {
   uploadFile,
   deleteFile,
   assignFilePolicy,
-  updateFilePolicy
+  deleteFilePolicy,
+  updateFilePolicy,
+  getUserPolicyAndFilePolicy,
 }
