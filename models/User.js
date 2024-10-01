@@ -32,18 +32,23 @@ const User = sequelize.define('User', {
   lastLoginDeviceId: {
     type: DataTypes.UUID,
     references: {
-      model: 'Devices',  // Device 모델의 테이블을 참조
+      model: 'Devices',
       key: 'id',
     },
-    allowNull: true,  // 첫 로그인일 때는 null일 수 있습니다.
+    allowNull: true,
   },
   lastLoginAt: {
-    type: DataTypes.DATE,  // 마지막 로그인 시간을 저장
-    allowNull: true,  // 첫 로그인일 때는 null일 수 있습니다.
+    type: DataTypes.DATE,
+    allowNull: true,
   },
   loginCooldownHour: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
+  },
+  accountExpiry: {
+    type: DataTypes.DATE,
+    defaultValue: new Date('2024-01-01'),  // 기본값을 2024-01-01로 설정
+    allowNull: false,  // NULL 허용하지 않음
   },
 }, {
   timestamps: true,

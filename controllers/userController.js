@@ -27,9 +27,8 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { username, password, fingerprint } = req.body; // fingerprint를 요청 본문에서 받음
-    // ======================================================================================== //
-    // # 기본 로그인 로직 ( ID + PW 검증 )
-    // ======================================================================================== //
+
+    // 기본 로그인 로직 ( ID + PW 검증 )
     const user = await User.findOne({ where: { username } });
 
     if (!user) {
@@ -39,6 +38,16 @@ const loginUser = async (req, res) => {
     // 비밀번호 확인
     if (password !== user.password) {
       return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    // ======================================================================================== //
+    // 계정 만료일 체크 (만료일이 오늘 이전이면 로그인 차단)
+    // ======================================================================================== //
+    const currentDate = new Date();
+    const accountExpiryDate = new Date(user.accountExpiry);
+
+    if (currentDate > accountExpiryDate) {
+      return res.status(403).json({ error: 'Your account has expired.' });
     }
 
     // ======================================================================================== //
@@ -59,6 +68,7 @@ const loginUser = async (req, res) => {
       const { password: _, ...userWithoutPassword } = user.toJSON();
       return res.status(200).json({ user: userWithoutPassword, token });
     }
+
     // ======================================================================================== //
     // 2. 쿨다운 시간이 0이 아닌 경우에만 디바이스 정보 확인
     // ======================================================================================== //
@@ -66,12 +76,14 @@ const loginUser = async (req, res) => {
     if (!device) {
       device = await Device.create({ fingerprint, userId: user.id });
     }
+
     // ======================================================================================== //
     // 3. 허용된 장치인지 확인
     // ======================================================================================== //
     if (!device.isAllowed) {
       return res.status(403).json({ error: 'This device is not allowed for login.' });
     }
+
     // ======================================================================================== //
     // 4. 마지막 로그인 장치와 다른 장치인지 확인
     // ======================================================================================== //
@@ -92,6 +104,7 @@ const loginUser = async (req, res) => {
         }
       }
     }
+
     // ======================================================================================== //
     // JWT 토큰 생성
     // ======================================================================================== //
@@ -107,9 +120,8 @@ const loginUser = async (req, res) => {
     user.lastLoginDeviceId = device.id;
     user.lastLoginAt = new Date();
     await user.save();
-    // ======================================================================================== //
+
     // 비밀번호는 제외하고 사용자 정보와 토큰 반환
-    // ======================================================================================== //
     const { password: _, ...userWithoutPassword } = user.toJSON();
     res.status(200).json({ user: userWithoutPassword, token });
 
@@ -117,10 +129,11 @@ const loginUser = async (req, res) => {
     // ======================================================================================== //
     // 오류 처리
     // ======================================================================================== //
-     console.error(error);
+    console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 const findPolicy = async (req, res) => {
   try {
