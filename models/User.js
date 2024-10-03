@@ -39,7 +39,8 @@ const User = sequelize.define('User', {
   },
   lastLoginAt: {
     type: DataTypes.DATE,
-    allowNull: true,
+    defaultValue: new Date('2024-01-01'),  // 기본값을 2024-01-01로 설정
+    allowNull: false,
   },
   loginCooldownHour: {
     type: DataTypes.INTEGER,
