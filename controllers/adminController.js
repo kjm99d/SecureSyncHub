@@ -417,10 +417,29 @@ const assignUserPolicy = async (req, res) => {
       policyValue
     });
 
+
+    // =========================================================================================== //
+    // 사용자의 파일 정책, 파일 정보와 사용자 정책을 조회
+    // <!-- 여기는 수정이 필요할 것 같음. 이렇게하면 너무 난잡함 .. 
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: UserPolicy,  // 사용자 정책 정보 포함
+          //as: 'UserPolicies', // 별칭을 관계 정의 시 사용한 별칭으로 수정
+          attributes: ['id', 'policyId', 'policyValue'],  // 필요한 사용자 정책 정보만 가져옴
+          include: [{
+            model: Policy,
+            attributes: ['id', 'policyName']
+          }]
+        },
+      ],
+    });
+    // =========================================================================================== //
     res.status(201).json({
       message: 'User policy assigned successfully',
-      policy: newUserPolicy
+      userPolicies: user.UserPolicies
     });
+    // =========================================================================================== //
   } catch (error) {
     res.status(500).json({ message: 'Error assigning policy', error });
   }
@@ -431,7 +450,7 @@ const deleteUserPolicy = async (req, res) => {
     const { userId, policyId } = req.params;
 
     const deletedPolicy = await UserPolicy.destroy({
-      where: { userId, policyId }
+      where: { userId, id: policyId }
     });
 
     if (deletedPolicy) {
