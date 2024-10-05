@@ -158,10 +158,10 @@ const findPolicy = async (req, res) => {
       include: [
         {
           model: FilePolicy,
-          attributes: ['id', 'downloadFilePath', 'priority'],
+          attributes: ['id', 'downloadType', 'downloadFilePath', 'priority'],
           include: [{  
             model: File,
-            attributes: ['id']
+            attributes: ['id', 'fileName']
           }]
         },
         {
