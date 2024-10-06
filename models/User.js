@@ -10,7 +10,7 @@ const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: 'unique_username', // 인덱스 이름 지정
+    unique: true,
   },
   password: {
     type: DataTypes.STRING,
@@ -19,7 +19,7 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: 'unique_email', // 인덱스 이름 지정
+    unique: true,
   },
   point: {
     type: DataTypes.INTEGER,
@@ -29,18 +29,28 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('user', 'admin'),
     defaultValue: 'user',
   },
-  loginCooldownEnabled: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+  lastLoginDeviceId: {
+    type: DataTypes.UUID,
+    references: {
+      model: 'Devices',
+      key: 'id',
+    },
+    allowNull: true,
+  },
+  lastLoginAt: {
+    type: DataTypes.DATE,
+    defaultValue: new Date('2024-01-01'),  // 기본값을 2024-01-01로 설정
+    allowNull: false,
+  },
+  loginCooldownHour: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
   accountExpiry: {
     type: DataTypes.DATE,
-    allowNull: true,
+    defaultValue: new Date('2024-01-01'),  // 기본값을 2024-01-01로 설정
+    allowNull: false,  // NULL 허용하지 않음
   },
-  last_login: {
-    type: DataTypes.DATE,  // 마지막 로그인 시간 저장
-    allowNull: true,
-  }
 }, {
   timestamps: true,
 });

@@ -10,6 +10,7 @@ const Device = sequelize.define('Device', {
   fingerprint: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   userId: {
     type: DataTypes.UUID,
@@ -17,6 +18,11 @@ const Device = sequelize.define('Device', {
       model: 'Users',
       key: 'id',
     },
+    allowNull: false,
+  },
+  isAllowed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,  // 기본값을 false로 설정
     allowNull: false,
   },
 }, {
