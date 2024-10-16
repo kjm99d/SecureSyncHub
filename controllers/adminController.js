@@ -409,6 +409,23 @@ const addPolicy = async (req, res) => {
   }
 };
 
+const deletePolicy = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const policy = await Policy.findByPk(id);
+
+    if (!policy) {
+      return res.status(404).json({ message: 'Policy not found' });
+    }
+
+    await policy.destroy();
+    return res.status(200).json({ message: 'Policy deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error deleting policy', error });
+  }
+};
+
 const assignUserPolicy = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -481,6 +498,7 @@ export default {
   getUserPolicyAndFilePolicy,
   getPolicy,
   addPolicy,
+  deletePolicy,
   assignUserPolicy,
   deleteUserPolicy,
 }

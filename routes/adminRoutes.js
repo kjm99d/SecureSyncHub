@@ -18,6 +18,7 @@ const {
     getUserPolicyAndFilePolicy,
     getPolicy,
     addPolicy,
+    deletePolicy,
     assignUserPolicy,
     deleteUserPolicy,
 } = adminController;
@@ -44,6 +45,7 @@ router.delete('/users/:userId/files/:fileId/policy', deleteFilePolicy);
 // 정책 관리
 router.get("/policy", getPolicy);
 router.put("/policy", addPolicy);
+router.delete('/policy/:id', deletePolicy);
 
 // 사용자 정책관리
 router.post('/users/:userId/policy', assignUserPolicy);     // Add User Policy
